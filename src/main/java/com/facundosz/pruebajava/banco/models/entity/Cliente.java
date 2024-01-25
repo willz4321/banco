@@ -3,6 +3,8 @@ package com.facundosz.pruebajava.banco.models.entity;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +42,7 @@ public class Cliente {
   private Date fecha_registro;
 
   @OneToMany (mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonManagedReference
   private List<Cuenta> cuentas;
 
 public String getNombre() {
@@ -71,6 +74,9 @@ public List<Cuenta> getCuentas() {
 }
 public void setCuentas(List<Cuenta> cuentas) {
     this.cuentas = cuentas;
+}
+public int getCod_cliente() {
+    return cod_cliente;
 }
   
 }

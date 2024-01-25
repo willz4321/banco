@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.facundosz.pruebajava.banco.models.dao.ITipoTransaccionDao;
+import com.facundosz.pruebajava.banco.models.entity.Cuenta;
 import com.facundosz.pruebajava.banco.models.entity.Tipo;
 import com.facundosz.pruebajava.banco.models.entity.TipoTransaccion;
 
@@ -23,6 +24,10 @@ public class TipoTransaccionService {
 
     public TipoTransaccion findByNombre(Tipo nombre_transaccion) {
     return tipoTransaccionDao.findByNombre(nombre_transaccion);
-}
+   }
    
-}
+    public TipoTransaccion findById(int id) {
+            return tipoTransaccionDao.findById(id);
+        }
+
+    }

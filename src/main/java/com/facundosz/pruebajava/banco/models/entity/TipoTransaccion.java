@@ -22,8 +22,6 @@ public class TipoTransaccion {
   private int Id_tipo_transaccion;
   
   @Enumerated(EnumType.STRING)
-  @Column(length = 100)
-  @Size(max = 100)
   private Tipo nombre;
   
   @OneToMany (mappedBy = "tipoTransaccion")

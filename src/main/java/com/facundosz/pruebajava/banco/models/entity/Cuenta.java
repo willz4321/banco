@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +27,7 @@ public class Cuenta {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(length = 10)
-  private Long numero_cuenta; 
+  private Long numeroCuenta; 
 
   @Column(length = 50)
   @Size(max = 50)
@@ -45,6 +47,7 @@ public class Cuenta {
 
   @ManyToOne(optional = false) 
   @JoinColumn(name = "COD_CLIENTE") 
+  @JsonBackReference
   private Cliente cliente;
   
   @OneToMany(mappedBy = "id_transaccion")
@@ -57,7 +60,7 @@ public void setCliente(Cliente cliente) {
     this.cliente = cliente;
 }
 public Long getNumero_cuenta() {
-    return numero_cuenta;
+    return numeroCuenta;
 }
 public String getNombre_cuenta() {
     return nombre_cuenta;
@@ -88,6 +91,10 @@ public char getEstado_cuenta() {
 }
 public void setEstado_cuenta(char estado_cuenta) {
     this.estado_cuenta = estado_cuenta;
+}
+public Cuenta orElseThrow(Object object) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
 } 
 
   

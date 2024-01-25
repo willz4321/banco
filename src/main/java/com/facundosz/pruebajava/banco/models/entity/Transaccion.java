@@ -1,5 +1,6 @@
 package com.facundosz.pruebajava.banco.models.entity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
@@ -20,11 +21,11 @@ public class Transaccion {
   private int id_transaccion ;
 
   @Digits(integer = 10, fraction = 2)
-  private double valor_monteario; 
+  private BigDecimal valor_monteario; 
   private Date fecha_transaccion; 
 
   @ManyToOne (optional = false) 
-  @JoinColumn (name = "numero_cuenta") 
+  @JoinColumn (name = "numeroCuenta") 
   private Cuenta cuenta;
   
   @ManyToOne (optional = false)
@@ -37,10 +38,10 @@ public int getId_transaccion() {
 public void setId_transaccion(int id_transaccion) {
     this.id_transaccion = id_transaccion;
 }
-public double getValor_monteario() {
+public BigDecimal getValor_monteario() {
     return valor_monteario;
 }
-public void setValor_monteario(double valor_monteario) {
+public void setValor_monteario(BigDecimal valor_monteario) {
     this.valor_monteario = valor_monteario;
 }
 public Date getFecha_transaccion() {
@@ -49,11 +50,17 @@ public Date getFecha_transaccion() {
 public void setFecha_transaccion(Date fecha_transaccion) {
     this.fecha_transaccion = fecha_transaccion;
 }
-public Cuenta getNumero_cuenta() {
+public Cuenta getCuenta() {
     return cuenta;
 }
-public void setNumero_cuenta(Cuenta numero_cuenta) {
+public void setCuenta(Cuenta numero_cuenta) {
     this.cuenta = numero_cuenta;
+}
+public TipoTransaccion getTipoTransaccion() {
+    return tipoTransaccion;
+}
+public void setTipoTransaccion(TipoTransaccion tipoTransaccion) {
+    this.tipoTransaccion = tipoTransaccion;
 }
  
   
