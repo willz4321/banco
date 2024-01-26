@@ -69,14 +69,15 @@ public Date getFecha_registro() {
 public void setFecha_registro(Date fecha_registro) {
     this.fecha_registro = fecha_registro;
 }
-public List<Cuenta> getCuentas() {
-    return cuentas;
-}
+
 public void setCuentas(List<Cuenta> cuentas) {
     this.cuentas = cuentas;
 }
 public int getCod_cliente() {
     return cod_cliente;
+}
+public List<Cuenta> getCuentas() {
+    return cuentas;
 }
   
 }

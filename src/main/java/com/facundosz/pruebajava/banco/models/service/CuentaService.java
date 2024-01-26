@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.facundosz.pruebajava.banco.models.dao.ICuentaDao;
+import com.facundosz.pruebajava.banco.models.entity.Cliente;
 import com.facundosz.pruebajava.banco.models.entity.Cuenta;
 
 @Service
@@ -19,6 +20,10 @@ public class CuentaService {
    
      public List<Cuenta> findAll(){  
         return (List<Cuenta>) cuentaDao.findAll();
+    }
+
+     public List<Cuenta> findByCliente(Cliente cliente) {
+        return cuentaDao.findByCliente(cliente);
     }
 
     public Cuenta findByNumeroCuenta(Long id) {

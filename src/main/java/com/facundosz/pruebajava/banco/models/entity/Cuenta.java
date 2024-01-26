@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,6 +52,7 @@ public class Cuenta {
   private Cliente cliente;
   
   @OneToMany(mappedBy = "id_transaccion")
+  @JsonManagedReference
   private List<Transaccion> transacciones;
 
 public Cliente getCliente() {
@@ -92,10 +94,16 @@ public char getEstado_cuenta() {
 public void setEstado_cuenta(char estado_cuenta) {
     this.estado_cuenta = estado_cuenta;
 }
+
+public Long getNumeroCuenta() {
+    return numeroCuenta;
+}
+public List<Transaccion> getTransacciones() {
+    return transacciones;
+}
 public Cuenta orElseThrow(Object object) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
 } 
-
   
 }

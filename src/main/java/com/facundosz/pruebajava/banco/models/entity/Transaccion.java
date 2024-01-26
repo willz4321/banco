@@ -3,6 +3,8 @@ package com.facundosz.pruebajava.banco.models.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,6 +28,7 @@ public class Transaccion {
 
   @ManyToOne (optional = false) 
   @JoinColumn (name = "numeroCuenta") 
+  @JsonBackReference
   private Cuenta cuenta;
   
   @ManyToOne (optional = false)

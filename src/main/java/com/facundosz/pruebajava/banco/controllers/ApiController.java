@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.facundosz.pruebajava.banco.models.entity.Cliente;
@@ -75,6 +74,26 @@ private final TransaccionService transaccionService;
         }
   }
   
+  @GetMapping("/cuentas/{dui}")
+    public ResponseEntity<List<Cuenta>> getCuentasByDui(@PathVariable String dui) {
+        try {
+            Cliente cliente = clienteService.findByDui(dui);
+
+            if (cliente != null) {
+                List<Cuenta> cuentas = cuentaService.findByCliente(cliente);
+                if (!cuentas.isEmpty()) {
+                    return new ResponseEntity<>(cuentas, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                }
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
   @PostMapping("/registerClient")
     public ResponseEntity<Object> createClient(@RequestBody Cliente newClient) {
     
@@ -107,38 +126,38 @@ private final TransaccionService transaccionService;
     }
 
     @PostMapping("/createTransaction/{numero_cuenta}/{tipoTransaccion}/{valorTransaccion}")
-    public ResponseEntity<Object> createTransaction( @PathVariable Long numero_cuenta, @PathVariable int tipoTransaccion, @PathVariable BigDecimal valorTransaccion) {
+    public ResponseEntity<Object> createTransaction(@PathVariable Long numero_cuenta, @PathVariable int tipoTransaccion, @PathVariable BigDecimal valorTransaccion) {
         Transaccion trans = new Transaccion();
         try {
             Cuenta cuenta = cuentaService.findByNumeroCuenta(numero_cuenta);
     
-            if (cuenta != null) {
+            if (cuenta != null && 'A' == cuenta.getEstado_cuenta()) {
                 trans.setCuenta(cuenta);
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-
+    
             TipoTransaccion tipoTransaccionObject = tipoTranService.findById(tipoTransaccion);
                 
             if (tipoTransaccionObject != null) {
                 if (tipoTransaccionObject.getId_tipo_transaccion() == 2 && cuenta.getSaldo().compareTo(valorTransaccion) >= 0) {
-
+    
                     BigDecimal nuevoSaldo = cuenta.getSaldo().subtract(valorTransaccion);
                     cuenta.setSaldo(nuevoSaldo);
     
                     cuentaService.saveCuenta(cuenta);
                     trans.setTipoTransaccion(tipoTransaccionObject);
-
-                }else if (tipoTransaccionObject.getId_tipo_transaccion() == 1) {
+    
+                } else if (tipoTransaccionObject.getId_tipo_transaccion() == 1) {
                     BigDecimal nuevoSaldo = cuenta.getSaldo().add(valorTransaccion);
                     cuenta.setSaldo(nuevoSaldo);
                     cuentaService.saveCuenta(cuenta);
                     trans.setTipoTransaccion(tipoTransaccionObject);
-
+    
                 } else {
                     return new ResponseEntity<>("El valor de la transacción excede el saldo de la cuenta", HttpStatus.BAD_REQUEST);
                 }
-
+    
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);      
             }
