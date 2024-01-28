@@ -44,7 +44,7 @@ public class Cuenta {
   private BigDecimal saldo; 
 
   @Column(length = 1)
-  private char estado_cuenta;
+  private Character estado_cuenta;
 
   @ManyToOne(optional = false) 
   @JoinColumn(name = "COD_CLIENTE") 
@@ -88,10 +88,10 @@ public BigDecimal getSaldo() {
 public void setSaldo(BigDecimal saldo) {
     this.saldo = saldo;
 }
-public char getEstado_cuenta() {
+public Character getEstado_cuenta() {
     return estado_cuenta;
 }
-public void setEstado_cuenta(char estado_cuenta) {
+public void setEstado_cuenta(Character estado_cuenta) {
     this.estado_cuenta = estado_cuenta;
 }
 

@@ -8,11 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.facundosz.pruebajava.banco.models.entity.Cliente;
 import com.facundosz.pruebajava.banco.models.entity.Cuenta;
@@ -24,171 +23,166 @@ import com.facundosz.pruebajava.banco.models.service.TipoTransaccionService;
 import com.facundosz.pruebajava.banco.models.service.TransaccionService;
 
 @Controller
-@EnableWebMvc
 public class RegisterMVCController {
 
-    // private final ClienteService clienteService;
-    // private final CuentaService cuentaService;
-    // private final TipoTransaccionService tipoTranService;
-    // private final TransaccionService transaccionService;
+    private final ClienteService clienteService;
+    private final CuentaService cuentaService;
+    private final TipoTransaccionService tipoTranService;
+    private final TransaccionService transaccionService;
 
-    // public RegisterMVCController(ClienteService clienteService, CuentaService cuentaService, TipoTransaccionService tipoTranService,
-    //                           TransaccionService transaccionService) {
-    //     this.clienteService = clienteService;
-    //     this.cuentaService = cuentaService;
-    //     this.tipoTranService = tipoTranService;
-    //     this.transaccionService = transaccionService;
-    // }
+    public RegisterMVCController(ClienteService clienteService, CuentaService cuentaService, TipoTransaccionService tipoTranService,
+                              TransaccionService transaccionService) {
+        this.clienteService = clienteService;
+        this.cuentaService = cuentaService;
+        this.tipoTranService = tipoTranService;
+        this.transaccionService = transaccionService;
+    }
 
-    @GetMapping("/BankClient")
+    @GetMapping("/")
     public String showBankClientForm() {
-        // Puedes agregar cualquier atributo que necesites en tu vista
-      //  model.addAttribute("cliente", new Cliente());
         return "bankClient";
     }
     
-    @GetMapping("/registerClient")
-    public String showRegisterClientForm(Model model) {
-        // Puedes agregar cualquier atributo que necesites en tu vista
-        model.addAttribute("cliente", new Cliente());
-        return "registerClient";
+    @GetMapping("/listClient")
+    public String getClients(Model model) {
+        List<Cliente> clientes = clienteService.findAll();
+        model.addAttribute("clientes", clientes);
+        return "listClient";
     }
     
-    @GetMapping("/createAccount")
-    public String showCreateAccountForm(Model model) {
-        // Puedes agregar cualquier atributo que necesites en tu vista
-        model.addAttribute("cuenta", new Cuenta());
-        return "createAccount";
+    @GetMapping("/getDui")
+    public String getClientDui(@RequestParam String dui, Model model) {
+        try {
+            Cliente cliente = clienteService.findByDui(dui);
+         
+            if (cliente != null) {
+                model.addAttribute("cuenta", new Cuenta());
+                model.addAttribute("cliente", cliente);
+                return "cuenta"; 
+            } else {
+                model.addAttribute("cliente", new Cliente()); 
+                return "cliente"; 
+            }
+        } catch (Exception e) {
+          
+            return "error"; 
+        }
     }
+
+    @GetMapping("/transaccion")
+    public String showTransaccionForm(@RequestParam(name = "clienteDui") String clienteDui, Model model) {
+        try {
+            Cliente cliente = clienteService.findByDui(clienteDui);
+
+            if (cliente != null) {
+                List<Cuenta> cuentas = cuentaService.findByCliente(cliente);
+
+                if (!cuentas.isEmpty()) {
+                    List<TipoTransaccion> tiposTransaccion = tipoTranService.getAll();
+
+                    model.addAttribute("cuentas", cuentas);
+                    model.addAttribute("tiposTransaccion", tiposTransaccion);
+                    model.addAttribute("transaccion", new Transaccion());
+
+                    return "operationClient";
+                } else {
+                
+                    return "redirect:/error";
+                }
+            } else {
+                return "redirect:/error";
+            }
+        } catch (Exception e) {
+            return "redirect:/error";
+        }
+    }
+    @PostMapping("/registrar")
+    public String registerClient(@ModelAttribute("cliente") Cliente newClient, Model model) {
     
-    // @GetMapping("/tipos")
-    // public List<TipoTransaccion> getTipos() {
-    //     List<TipoTransaccion> tiposTrans = tipoTranService.getAll();
-    //     return tiposTrans;
-    // }
+        if (clienteService.existsByDui(newClient.getDui())) {
+            model.addAttribute("error", "El DUI ya está registrado");
+            return "cliente"; 
+        }
 
-    // @GetMapping("/clientes")
-    // public List<Cliente> mostrarClientes() {
-    //     List<Cliente> clientes = clienteService.findAll();
-    //     return clientes;
-    // }
+        clienteService.saveCliente(newClient);
+        return "redirect:/cliente/exito"; // Redirige a una página de éxito o a donde desees
+    }
 
-    // @GetMapping("/cuentas")
-    // public List<Cuenta> mostrarCuentas() {
-    //     List<Cuenta> cuentas = cuentaService.findAll();
-    //     return cuentas;
-    // }
+    @PostMapping("/guardarCuenta")
+    public String guardarCuenta(@ModelAttribute("cuenta") Cuenta cuenta, @RequestParam(name = "clienteDui") String clienteDui, Model model) {
+        System.out.println("datos del cliente");
+        System.out.println(clienteDui);
 
-    // @GetMapping("/getDui/{dui}")
-    // public ResponseEntity<Cliente> getClientDui(@PathVariable String dui) {
-    //     try {
-    //         Cliente cliente = clienteService.findByDui(dui);
+                try {
+                Cliente cliente = clienteService.findByDui(clienteDui);
+                
+                if (cliente == null) {
+                    return "El Cliente no está en la base de datos";
+        }
+            
+            cuenta.setCliente(cliente); 
+            
+            Cuenta savedCuenta = cuentaService.saveCuenta(cuenta); 
+    
+            model.addAttribute("cuenta", savedCuenta);
+            return "redirect:/"; 
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "error";
+        }
+    }
+    @PostMapping("/procesarTransaccion")
+     public String createTransaction(@RequestParam("cuenta") Long numero_cuenta, @RequestParam("tipoTransaccion") int tipoTransaccion, @RequestParam("valorTransaccion") BigDecimal valorTransaccion, Model model) {
+            Transaccion trans = new Transaccion();
+            try {
+                Cuenta cuenta = cuentaService.findByNumeroCuenta(numero_cuenta);
 
-    //         if (cliente != null) {
-    //             return new ResponseEntity<>(cliente, HttpStatus.OK);
-    //         } else {
-    //             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //         }
-    //     } catch (Exception e) {
-    //         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
+                if (cuenta != null && 'A' == cuenta.getEstado_cuenta()) {
+                    trans.setCuenta(cuenta);
+                } else {
+                    model.addAttribute("error", "Cuenta no encontrada o inactiva");
+                    return "error";
+                }
 
-    // @GetMapping("/cuentas/{dui}")
-    // public ResponseEntity<List<Cuenta>> getCuentasByDui(@PathVariable String dui) {
-    //     try {
-    //         Cliente cliente = clienteService.findByDui(dui);
+                TipoTransaccion tipoTransaccionObject = tipoTranService.findById(tipoTransaccion);
+                    
+                if (tipoTransaccionObject != null) {
+                    if (tipoTransaccionObject.getId_tipo_transaccion() == 2 && cuenta.getSaldo().compareTo(valorTransaccion) >= 0) {
 
-    //         if (cliente != null) {
-    //             List<Cuenta> cuentas = cuentaService.findByCliente(cliente);
-    //             if (!cuentas.isEmpty()) {
-    //                 return new ResponseEntity<>(cuentas, HttpStatus.OK);
-    //             } else {
-    //                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    //             }
-    //         } else {
-    //             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //         }
-    //     } catch (Exception e) {
-    //         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
+                        BigDecimal nuevoSaldo = cuenta.getSaldo().subtract(valorTransaccion);
+                        cuenta.setSaldo(nuevoSaldo);
 
-    // @PostMapping("/registerClient")
-    // public ResponseEntity<Object> createClient(@RequestBody Cliente newClient) {
+                        cuentaService.saveCuenta(cuenta);
+                        trans.setTipoTransaccion(tipoTransaccionObject);
 
-    //     if (clienteService.existsByDui(newClient.getDui())) {
-    //         return ResponseEntity.badRequest().body("El DUI ya está registrado");
-    //     }
+                    } else if (tipoTransaccionObject.getId_tipo_transaccion() == 1) {
+                        BigDecimal nuevoSaldo = cuenta.getSaldo().add(valorTransaccion);
+                        cuenta.setSaldo(nuevoSaldo);
+                        cuentaService.saveCuenta(cuenta);
+                        trans.setTipoTransaccion(tipoTransaccionObject);
 
-    //     Cliente createdClient = clienteService.saveCliente(newClient);
-    //     return ResponseEntity.ok(createdClient);
-    // }
+                    } else {
+                        model.addAttribute("error", "El valor de la transacción excede el saldo de la cuenta");
+                        return "error";
+                    }
 
-    // @PostMapping("/createAccount/{dui}")
-    // public ResponseEntity<Object> createAccount(@RequestBody Cuenta newAccount, @PathVariable String dui) {
+                } else {
+                    model.addAttribute("error", "Tipo de transacción no encontrado");
+                    return "error";      
+                }
 
-    //     Cliente cliente = clienteService.findByDui(dui);
+            } catch (NumberFormatException e) {
+                model.addAttribute("error", "Error en el formato de los datos");
+                return "error";
+            } catch (Exception e) {
+                model.addAttribute("error", "Error interno del servidor");
+                return "error";
+            }
 
-    //     if (cliente == null) {
-    //         return ResponseEntity.badRequest().body("El cliente con el DUI proporcionado no existe");
-    //     }
-    //     newAccount.setCliente(cliente);
+            // Guardo la transacción
+            Transaccion savedTrans = transaccionService.saveTransaccion(trans);
+            model.addAttribute("transaccion", savedTrans);
+            return "redirect:/";
+        }
 
-    //     Cuenta createdAccount = cuentaService.saveCuenta(newAccount);
-
-    //     if (createdAccount == null) {
-    //         throw new RuntimeException("La cuenta no se pudo guardar.");
-    //     }
-
-    //     return ResponseEntity.ok(createdAccount);
-    // }
-
-    // @PostMapping("/createTransaction/{numero_cuenta}/{tipoTransaccion}/{valorTransaccion}")
-    // public ResponseEntity<Object> createTransaction(@PathVariable Long numero_cuenta, @PathVariable int tipoTransaccion, @PathVariable BigDecimal valorTransaccion) {
-    //     Transaccion trans = new Transaccion();
-    //     try {
-    //         Cuenta cuenta = cuentaService.findByNumeroCuenta(numero_cuenta);
-
-    //         if (cuenta != null) {
-    //             trans.setCuenta(cuenta);
-    //         } else {
-    //             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //         }
-
-    //         TipoTransaccion tipoTransaccionObject = tipoTranService.findById(tipoTransaccion);
-
-    //         if (tipoTransaccionObject != null) {
-    //             if (tipoTransaccionObject.getId_tipo_transaccion() == 2 && cuenta.getSaldo().compareTo(valorTransaccion) >= 0) {
-
-    //                 BigDecimal nuevoSaldo = cuenta.getSaldo().subtract(valorTransaccion);
-    //                 cuenta.setSaldo(nuevoSaldo);
-
-    //                 cuentaService.saveCuenta(cuenta);
-    //                 trans.setTipoTransaccion(tipoTransaccionObject);
-
-    //             } else if (tipoTransaccionObject.getId_tipo_transaccion() == 1) {
-    //                 BigDecimal nuevoSaldo = cuenta.getSaldo().add(valorTransaccion);
-    //                 cuenta.setSaldo(nuevoSaldo);
-    //                 cuentaService.saveCuenta(cuenta);
-    //                 trans.setTipoTransaccion(tipoTransaccionObject);
-
-    //             } else {
-    //                 return new ResponseEntity<>("El valor de la transacción excede el saldo de la cuenta", HttpStatus.BAD_REQUEST);
-    //             }
-
-    //         } else {
-    //             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //         }
-
-    //     } catch (NumberFormatException e) {
-    //         return new ResponseEntity<>("Error en el formato de los datos", HttpStatus.BAD_REQUEST);
-    //     } catch (Exception e) {
-    //         return new ResponseEntity<>("Error interno del servidor", HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-
-    //     // Guardo la transacción
-    //     Transaccion savedTrans = transaccionService.saveTransaccion(trans);
-    //     return ResponseEntity.ok(savedTrans);
-    // }
 }

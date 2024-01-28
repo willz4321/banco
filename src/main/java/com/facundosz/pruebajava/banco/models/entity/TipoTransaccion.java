@@ -37,6 +37,10 @@ public Tipo getNombre_transaccion() {
 public void setNombre_transaccion(Tipo nombre) {
     this.nombre = nombre;
 }
-
-  
+public Tipo getNombre() {
+    return nombre;
+}
+public void setNombre(Tipo nombre) {
+    this.nombre = nombre;
+}  
 }

@@ -26,7 +26,7 @@ public class BancoApplication {
                    // Si el tipo no existe, crea uno nuevo
                    if (existingTipo == null) {
                        TipoTransaccion tip = new TipoTransaccion();
-                       tip.setNombre_transaccion(tipo);
+                       tip.setNombre(tipo);
                        tipoTransaccionDao.save(tip);
                    }
                }
